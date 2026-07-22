@@ -17,7 +17,7 @@ func New(app *app.Application) *Server {
 
 	router := gin.Default()
 
-	routes.Register(router, app)
+	routes.Register(router, app) 
 
 	return &Server{
 		app:    app,

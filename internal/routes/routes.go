@@ -9,8 +9,22 @@ import (
 func Register(router *gin.Engine, app *app.Application) {
 
 	healthHandler := handlers.NewHealthHandler(app)
+	authHandler := handlers.NewAuthHandler(app)
 
-	router.GET("/health", healthHandler.Health)
+	api := router.Group("/api/v1")
 
-	router.GET("/db-health", healthHandler.DBHealth)
+	health := api.Group("/health")
+	{
+	health.GET("/", healthHandler.Health)
+
+	health.GET("/db", healthHandler.DBHealth)
+	}
+
+	auth := api.Group("/auth")
+	{
+		auth.POST("/signup", authHandler.Signup)
+		auth.POST("/login", authHandler.Login)
+	}
+
+
 }

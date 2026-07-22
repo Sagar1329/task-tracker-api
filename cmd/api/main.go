@@ -14,6 +14,10 @@ import (
 func main(){
 	cfg := config.Load()
 
+	if err := cfg.Validate(); err != nil {
+	log.Fatal(err)
+}
+ 
 	fmt.Println("Application:", cfg.AppName)
 	fmt.Println("Running on Port:", cfg.AppPort)
 	fmt.Println("Database", cfg.DBName)
