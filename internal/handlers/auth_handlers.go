@@ -25,7 +25,7 @@ func NewAuthHandler(app *app.Application) *AuthHandler{
 
 	authService := services.NewAuthService(
 		userRepository,
-		app.Config.JWTSecret,
+		app.Config.JWT.Secret,
 	)
 
 	return &AuthHandler{

@@ -27,7 +27,7 @@ jobApplicationHandler := handlers.NewJobApplicationHandler(app)
 		auth.POST("/login", authHandler.Login)
 	}
     jobApplications := api.Group("/job-applications")
-     jobApplications.Use(middleware.AuthMiddleware(app.Config.JWTSecret))
+     jobApplications.Use(middleware.AuthMiddleware(app.Config.JWT.Secret))
 {
 	jobApplications.POST("/", jobApplicationHandler.Create)
 	jobApplications.GET("/", jobApplicationHandler.GetAll)

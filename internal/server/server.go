@@ -1,8 +1,9 @@
 package server
 
 import (
-	"log"
-
+	"github.com/Sagar1329/task-tracker-api/internal/logger"
+"log/slog"
+"os"
 	"github.com/Sagar1329/task-tracker-api/internal/app"
 	"github.com/Sagar1329/task-tracker-api/internal/routes"
 	"github.com/gin-gonic/gin"
@@ -27,11 +28,12 @@ func New(app *app.Application) *Server {
 
 func (s *Server) Start() {
 
-	log.Printf("Server running on port %s", s.app.Config.AppPort)
+	logger.Log.Info("Server running on port %s", s.app.Config.Server.Port)
 
-	err := s.router.Run(":" + s.app.Config.AppPort)
+	err := s.router.Run(":" + s.app.Config.Server.Port)
 
 	if err != nil {
-		log.Fatal(err)
+		logger.Log.Error("Failed to start server", slog.Any("error", err))
+		os.Exit(1)	 
 	}
 }

@@ -1,30 +1,37 @@
 package dto
 
 type CreateJobApplicationRequest struct {
-	CompanyName string `json:"company_name" binding:"required"`
+	CompanyName string `json:"company_name" binding:"required,min=2,max=255"`
 
-	JobTitle string `json:"job_title" binding:"required"`
+	JobTitle string `json:"job_title" binding:"required,min=2,max=255"`
 
-	JobLink string `json:"job_link"`
+	JobLink string `json:"job_link" binding:"omitempty,url,max=2048"`
 
-	JobPortal string `json:"job_portal" binding:"required"`
+	JobPortal string `json:"job_portal" binding:"required,oneof=LinkedIn Naukri Indeed Wellfound Other"`
 
-	Location string `json:"location"`
+	Location string `json:"location" binding:"omitempty,max=255"`
 
-	AppliedDate string `json:"applied_date" binding:"required"`
+	AppliedDate string `json:"applied_date" binding:"required,datetime=2006-01-02"`
 
-	Notes string `json:"notes"`
+	Notes string `json:"notes" binding:"omitempty,max=5000"`
 }
 
 type UpdateJobApplicationRequest struct {
-	CompanyName string `json:"company_name"`
-	JobTitle    string `json:"job_title"`
-	JobLink     string `json:"job_link"`
-	JobPortal   string `json:"job_portal"`
-	Location    string `json:"location"`
-	Status      string `json:"status"`
-	AppliedDate string `json:"applied_date"`
-	Notes       string `json:"notes"`
+	CompanyName string `json:"company_name" binding:"required,min=2,max=255"`
+
+	JobTitle string `json:"job_title" binding:"required,min=2,max=255"`
+
+	JobLink string `json:"job_link" binding:"omitempty,url,max=2048"`
+
+	JobPortal string `json:"job_portal" binding:"required,oneof=LinkedIn Naukri Indeed Wellfound Other"`
+
+	Location string `json:"location" binding:"omitempty,max=255"`
+
+	Status string `json:"status" binding:"required,oneof=Applied Interview Rejected Offer"`
+
+	AppliedDate string `json:"applied_date" binding:"required,datetime=2006-01-02"`
+
+	Notes string `json:"notes" binding:"omitempty,max=5000"`
 }
 type JobApplicationResponse struct {
 	ID string `json:"id"`

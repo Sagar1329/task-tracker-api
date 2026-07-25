@@ -1,17 +1,17 @@
 package handlers
 
 import (
-	"errors"
+
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
 	"github.com/Sagar1329/task-tracker-api/internal/app"
-	appErrors "github.com/Sagar1329/task-tracker-api/internal/errors"
 	"github.com/Sagar1329/task-tracker-api/internal/dto"
 	"github.com/Sagar1329/task-tracker-api/internal/repositories"
 	"github.com/Sagar1329/task-tracker-api/internal/services"
+	"github.com/Sagar1329/task-tracker-api/internal/httpresponse"
 )
 
 type JobApplicationHandler struct {
@@ -36,108 +36,83 @@ func getJobApplicationID(c *gin.Context) (uuid.UUID, error) {
 	return uuid.Parse(c.Param("id"))
 }
 
+
 func (h *JobApplicationHandler) Create(c *gin.Context) {
 
 	var request dto.CreateJobApplicationRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-
+		httpresponse.Error(c, http.StatusBadRequest, httpresponse.FormatValidationError(err))
 		return
 	}
 
 	userID := getUserID(c)
 
-	response, err := h.jobService.Create(
+	jobApplicationResponse, err := h.jobService.Create(
 		userID,
 		request,
 	)
 
 	if err != nil {
-
-		if errors.Is(err, appErrors.ErrInvalidAppliedDate) {
-
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
-
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal Server Error",
-		})
-
+		httpresponse.HandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, response)
+	httpresponse.Success(
+		c,
+		http.StatusCreated,
+		"Job application created successfully.",
+		jobApplicationResponse,
+	)
 }
-
 
 func (h *JobApplicationHandler) GetAll(c *gin.Context) {
 
 	userID := getUserID(c)
 
-
-
-	response, err := h.jobService.GetAll(userID)
+	jobApplicationsResponse, err := h.jobService.GetAll(userID)
 
 	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal Server Error",
-		})
-
+		httpresponse.HandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, response)
+	httpresponse.Success(
+		c,
+		http.StatusOK,
+		"Job applications fetched successfully.",
+		jobApplicationsResponse,
+	)
 }
-
 
 func (h *JobApplicationHandler) GetByID(c *gin.Context) {
 
-jobApplicationID, err := getJobApplicationID(c)
+	jobApplicationID, err := getJobApplicationID(c)
 	if err != nil {
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid job application id",
-		})
-
+		httpresponse.Error(c, http.StatusBadRequest, "invalid job application id")
 		return
 	}
 
 	userID := getUserID(c)
 
-	response, err := h.jobService.GetByID(
+	jobApplicationResponse, err := h.jobService.GetByID(
 		userID,
 		jobApplicationID,
 	)
 
 	if err != nil {
-
-		if errors.Is(err, appErrors.ErrJobApplicationNotFound) {
-
-			c.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
-
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal Server Error",
-		})
-
+		httpresponse.HandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, response)
+	httpresponse.Success(
+		c,
+		http.StatusOK,
+		"Job application fetched successfully.",
+		jobApplicationResponse,
+	)
 }
+
 
 
 func (h *JobApplicationHandler) Update(c *gin.Context) {
@@ -145,63 +120,35 @@ func (h *JobApplicationHandler) Update(c *gin.Context) {
 	var request dto.UpdateJobApplicationRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-
+		httpresponse.Error(c, http.StatusBadRequest, httpresponse.FormatValidationError(err))
 		return
 	}
 
 	jobApplicationID, err := getJobApplicationID(c)
 	if err != nil {
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid job application id",
-		})
-
+		httpresponse.Error(c, http.StatusBadRequest, "invalid job application id")
 		return
 	}
 
 	userID := getUserID(c)
 
-	response, err := h.jobService.Update(
+	jobApplicationResponse, err := h.jobService.Update(
 		userID,
 		jobApplicationID,
 		request,
 	)
 
 	if err != nil {
-
-		switch {
-
-		case errors.Is(err, appErrors.ErrJobApplicationNotFound):
-
-			c.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
-
-			return
-
-		case errors.Is(err, appErrors.ErrInvalidAppliedDate):
-
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
-
-			return
-
-		default:
-
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": "Internal Server Error",
-			})
-
-			return
-		}
+		httpresponse.HandleError(c, err)
+		return
 	}
 
-	c.JSON(http.StatusOK, response)
+	httpresponse.Success(
+		c,
+		http.StatusOK,
+		"Job application updated successfully.",
+		jobApplicationResponse,
+	)
 }
 
 
@@ -209,38 +156,22 @@ func (h *JobApplicationHandler) Delete(c *gin.Context) {
 
 	jobApplicationID, err := getJobApplicationID(c)
 	if err != nil {
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid job application id",
-		})
-
+		httpresponse.Error(c, http.StatusBadRequest, "invalid job application id")
 		return
 	}
 
 	userID := getUserID(c)
 
-	err = h.jobService.Delete(
-		userID,
-		jobApplicationID,
-	)
-
+	err = h.jobService.Delete(userID, jobApplicationID)
 	if err != nil {
-
-		if errors.Is(err, appErrors.ErrJobApplicationNotFound) {
-
-			c.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
-
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal Server Error",
-		})
-
+		httpresponse.HandleError(c, err)
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	httpresponse.Success(
+		c,
+		http.StatusOK,
+		"Job application deleted successfully.",
+		nil,
+	)
 }
