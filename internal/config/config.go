@@ -14,6 +14,7 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	JWT      JWTConfig
+	Backup   Backup
 }
 
 type ServerConfig struct {
@@ -34,6 +35,11 @@ type JWTConfig struct {
 	Expiry time.Duration
 }
 
+type Backup struct{
+	Directory string
+	Interval time.Duration
+}
+
 func Load() *Config {
 
 	if err := godotenv.Load(); err != nil {
@@ -43,6 +49,11 @@ func Load() *Config {
 	jwtExpiry, err := time.ParseDuration(os.Getenv("JWT_EXPIRY"))
 	if err != nil {
 		log.Fatal("Invalid JWT_EXPIRY value in .env")
+	}
+
+	backupInterval, err := time.ParseDuration(os.Getenv("BACKUP_INTERVAL"))
+	if err != nil {
+		log.Fatal("Invalid BACKUP_INTERVAL value in .env")
 	}
 
 	return &Config{
@@ -64,6 +75,11 @@ func Load() *Config {
 		JWT: JWTConfig{
 			Secret: os.Getenv("JWT_SECRET"),
 			Expiry: jwtExpiry,
+		},
+
+		Backup: Backup{
+			Directory: os.Getenv("BACKUP_DIRECTORY"),
+			Interval: backupInterval,
 		},
 	}
 }

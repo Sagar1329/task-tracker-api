@@ -1,10 +1,11 @@
 package main
 
 import (
-	"os"
 	"log/slog"
+	"os"
 
 	"github.com/Sagar1329/task-tracker-api/internal/app"
+	"github.com/Sagar1329/task-tracker-api/internal/backup"
 	"github.com/Sagar1329/task-tracker-api/internal/config"
 	"github.com/Sagar1329/task-tracker-api/internal/database"
 	"github.com/Sagar1329/task-tracker-api/internal/logger"
@@ -57,7 +58,10 @@ func main() {
 		"Starting HTTP server",
 		slog.String("port", cfg.Server.Port),
 	)
-
+		if err := backup.RunIfNeeded(cfg); err != nil {
+			logger.Log.Error("Backup failed", "error", err)
+			os.Exit(1)
+		}
 	// Start Server
 	srv.Start()
 }
