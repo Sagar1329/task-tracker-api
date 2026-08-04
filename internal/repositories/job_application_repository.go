@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"errors"
-
+"strings"
 	"github.com/Sagar1329/task-tracker-api/internal/dto"
 	"github.com/Sagar1329/task-tracker-api/internal/models"
 	"github.com/google/uuid"
@@ -63,6 +63,17 @@ offset := (query.Page - 1) * query.Limit
 
 	db := r.db.Model(&models.JobApplication{}).
 		Where("user_id = ?", userID)
+
+		// Search
+	if query.Search != "" {
+		search := "%" + strings.TrimSpace(query.Search) + "%"
+
+		db = db.Where(
+			"(company_name ILIKE ? OR job_title ILIKE ?)",
+			search,
+			search,
+		)
+	}
 
 	if err := db.Count(&totalItems).Error; err != nil {
 		return nil, 0, err
