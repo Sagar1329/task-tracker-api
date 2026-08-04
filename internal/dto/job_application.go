@@ -70,6 +70,28 @@ type ListJobApplicationsQuery struct {
 	Order      string `form:"order"`
 }
 
+func (q *ListJobApplicationsQuery) Normalize() {
+
+	if q.Page < 1 {
+		q.Page = 1
+	}
+
+	switch {
+	case q.Limit < 1:
+		q.Limit = 10
+	case q.Limit > 100:
+		q.Limit = 100
+	}
+
+	if q.Sort == "" {
+		q.Sort = "applied_date"
+	}
+
+	if q.Order == "" {
+		q.Order = "desc"
+	}
+}
+
 type Pagination struct {
 	Page       int `json:"page"`
 	Limit      int `json:"limit"`

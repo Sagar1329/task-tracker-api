@@ -77,19 +77,9 @@ func (h *JobApplicationHandler) GetAll(c *gin.Context) {
 			httpresponse.HandleError(c, err)
 		return
 	}
-// Default Pagination
-	if query.Page <= 0 {
-		query.Page = 1
-	}
 
-	if query.Limit <= 0 {
-		query.Limit = 10
-	}
+query.Normalize()
 
-	if query.Limit > 100 {
-		log.Println("Are we coming here")
-		query.Limit = 100
-	}
 	log.Printf("Page: %d, Limit: %d\n", query.Page, query.Limit)
 	jobApplicationsResponse, err := h.jobService.GetAll(userID,query)
 

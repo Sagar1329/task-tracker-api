@@ -54,12 +54,12 @@ func (r *JobApplicationRepository) GetAllByUserID(
 ) ([]models.JobApplication, int64, error) {
 
 
-		var (
+	var (
 		jobApplications []models.JobApplication
 		totalItems      int64
 	)
 
-offset := (query.Page - 1) * query.Limit
+    offset := (query.Page - 1) * query.Limit
 
 	db := r.db.Model(&models.JobApplication{}).
 		Where("user_id = ?", userID)
@@ -75,12 +75,46 @@ offset := (query.Page - 1) * query.Limit
 		)
 	}
 
+	if query.Status != "" {
+	db = db.Where("status = ?", query.Status)
+}
+
+// Job Portal Filter
+if query.JobPortal != "" {
+	db = db.Where("job_portal = ?", query.JobPortal)
+}
+
+// Location Filter
+if query.Location != "" {
+	db = db.Where("location ILIKE ?", "%"+strings.TrimSpace(query.Location)+"%")
+}
+
 	if err := db.Count(&totalItems).Error; err != nil {
 		return nil, 0, err
 	}
 
+	allowedSortFields := map[string]string{
+	"company_name": "company_name",
+	"job_title":    "job_title",
+	"job_portal":   "job_portal",
+	"location":     "location",
+	"status":       "status",
+	"applied_date": "applied_date",
+	"created_at":   "created_at",
+	"updated_at":   "updated_at",
+}
+
+sortField, ok := allowedSortFields[query.Sort]
+if !ok {
+	sortField = "applied_date"
+}
+
+order := strings.ToUpper(query.Order)
+if order != "ASC" && order != "DESC" {
+	order = "DESC"
+}
 	if err := db.
-		Order("applied_date DESC").
+		Order(sortField + " " + order).
 		Offset(offset).
 		Limit(query.Limit).
 		Find(&jobApplications).Error; err != nil {
