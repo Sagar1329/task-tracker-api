@@ -1,10 +1,12 @@
 package repositories
 
 import (
+	"errors"
+
+	"github.com/Sagar1329/task-tracker-api/internal/dto"
 	"github.com/Sagar1329/task-tracker-api/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"errors"
 )
 
 
@@ -46,21 +48,35 @@ func (r *JobApplicationRepository) GetByIDAndUserID(id uuid.UUID, userID uuid.UU
 }
 
 
-func (r *JobApplicationRepository) GetAllByUserID(userId uuid.UUID) ([]models.JobApplication,error){
+func (r *JobApplicationRepository) GetAllByUserID(
+	userID uuid.UUID,
+	query dto.ListJobApplicationsQuery,
+) ([]models.JobApplication, int64, error) {
 
 
-	var jobApplications []models.JobApplication
+		var (
+		jobApplications []models.JobApplication
+		totalItems      int64
+	)
 
-	err := r.db.
-	Where("user_id = ?",userId).
-	Order("applied_date DESC").
-	Find(&jobApplications).Error
+offset := (query.Page - 1) * query.Limit
 
-	if err != nil {
-		return nil,err
+	db := r.db.Model(&models.JobApplication{}).
+		Where("user_id = ?", userID)
+
+	if err := db.Count(&totalItems).Error; err != nil {
+		return nil, 0, err
 	}
 
-	return jobApplications, nil
+	if err := db.
+		Order("applied_date DESC").
+		Offset(offset).
+		Limit(query.Limit).
+		Find(&jobApplications).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return jobApplications, totalItems, nil
 }
 
 

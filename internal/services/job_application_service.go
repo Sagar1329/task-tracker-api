@@ -3,6 +3,7 @@ package services
 import (
 	"time"
 	"fmt"
+	 "math"
 
 	"github.com/google/uuid"
 appErrors "github.com/Sagar1329/task-tracker-api/internal/errors"
@@ -64,19 +65,27 @@ if err != nil {
 
 func (s *JobApplicationService) GetAll(
 	userID uuid.UUID,
-) (*dto.ListJobApplicationsResponse, error){
-	jobApplications, err := s.jobRepository.GetAllByUserID(userID)
+	query dto.ListJobApplicationsQuery,
+) (*dto.ListJobApplicationsResponse, error) {
+	jobApplications, totalItems, err := s.jobRepository.GetAllByUserID(userID, query)
 
 	if err !=nil{
 		return nil,err
 	}
 
-	response := dto.ListJobApplicationsResponse{
-		Applications: mapper.ToJobApplicationResponses(jobApplications),
-		Total: int64(len(jobApplications)),
-	}
+items := mapper.ToJobApplicationResponses(jobApplications)
 
-	return &response,nil
+	totalPages := int(math.Ceil(float64(totalItems) / float64(query.Limit)))
+
+	return &dto.ListJobApplicationsResponse{
+		Items: items,
+		Pagination: dto.Pagination{
+			Page:       query.Page,
+			Limit:      query.Limit,
+			TotalItems: int(totalItems),
+			TotalPages: totalPages,
+		},
+	}, nil
 }
 
 func (s *JobApplicationService) GetByID(

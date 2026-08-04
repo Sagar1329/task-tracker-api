@@ -57,9 +57,28 @@ type JobApplicationResponse struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-type ListJobApplicationsResponse struct {
-	Applications []JobApplicationResponse `json:"applications"`
-	  Total int64 `json:"total"`
+
+
+type ListJobApplicationsQuery struct {
+	Page       int    `form:"page"`
+	Limit      int    `form:"limit"`
+	Search     string `form:"search"`
+	Status     string `form:"status"`
+	JobPortal  string `form:"job_portal"`
+	Location   string `form:"location"`
+	Sort       string `form:"sort"`
+	Order      string `form:"order"`
 }
 
+type Pagination struct {
+	Page       int `json:"page"`
+	Limit      int `json:"limit"`
+	TotalItems int `json:"total_items"`
+	TotalPages int `json:"total_pages"`
+}
+
+type ListJobApplicationsResponse struct {
+	Items      []JobApplicationResponse `json:"items"`
+	Pagination Pagination               `json:"pagination"`
+}
 

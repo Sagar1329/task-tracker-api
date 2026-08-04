@@ -3,6 +3,7 @@ package handlers
 import (
 
 	"net/http"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -70,7 +71,27 @@ func (h *JobApplicationHandler) GetAll(c *gin.Context) {
 
 	userID := getUserID(c)
 
-	jobApplicationsResponse, err := h.jobService.GetAll(userID)
+	var query dto.ListJobApplicationsQuery
+
+	if err :=c.ShouldBindQuery(&query); err != nil {
+			httpresponse.HandleError(c, err)
+		return
+	}
+// Default Pagination
+	if query.Page <= 0 {
+		query.Page = 1
+	}
+
+	if query.Limit <= 0 {
+		query.Limit = 10
+	}
+
+	if query.Limit > 100 {
+		log.Println("Are we coming here")
+		query.Limit = 100
+	}
+	log.Printf("Page: %d, Limit: %d\n", query.Page, query.Limit)
+	jobApplicationsResponse, err := h.jobService.GetAll(userID,query)
 
 	if err != nil {
 		httpresponse.HandleError(c, err)
